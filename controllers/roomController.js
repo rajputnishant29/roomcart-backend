@@ -3,7 +3,7 @@ const Room = require('../models/Room');
 
 const createRoom = async (req, res) => {
   const { name } = req.body;
-  const userId = req.user;
+  const userId = req.user.id;
 
   if (!name) {
     return res.status(400).json({ message: 'Room name is required' });
