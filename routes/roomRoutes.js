@@ -20,7 +20,7 @@ router.get('/my-rooms', auth, async (req, res) => {
   }
 });
 
-router.delete('/rooms/:id', authenticateUser, async (req, res) => {
+router.delete('/rooms/:id', auth, async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
 
