@@ -20,7 +20,7 @@ router.get('/my-rooms', auth, async (req, res) => {
   }
 });
 
-router.delete('/rooms/:id', auth, async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const room = await Room.findById(req.params.id);
 
@@ -28,7 +28,6 @@ router.delete('/rooms/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Room not found' });
     }
 
-    // Check if the logged-in user is the room's admin
     if (room.admin.toString() !== req.user.id) {
       return res.status(403).json({ message: 'Only the room admin can delete this room' });
     }
