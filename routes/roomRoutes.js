@@ -10,9 +10,15 @@ router.post('/join', auth, joinRoom);
 
 router.get('/my-rooms', auth, async (req, res) => {
   try {
-    const rooms = await Room.find({ members: req.user.id })
-      .populate('admin', 'name')       // ✅ populating the admin's name
-      .populate('members', 'name');    // ✅ populating members' names
+    const userId = req.user.id;
+    const rooms = await Room.find({
+      $or: [
+        { admin: userId },
+        { members: userId }
+      ]
+    })
+      .populate('admin', '_id name')
+      .populate('members', '_id name');
     res.status(200).json(rooms);
   } catch (error) {
     console.error('Error fetching user rooms:', error);

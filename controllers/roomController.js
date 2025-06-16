@@ -2,11 +2,12 @@ const { customAlphabet } = require('nanoid/non-secure');
 const Room = require('../models/Room');
 
 const createRoom = async (req, res) => {
-  const { name } = req.body;
+  const { name, description, themeColor, size } = req.body;
   const userId = req.user.id;
 
-  if (!name) {
-    return res.status(400).json({ message: 'Room name is required' });
+  // Basic validation
+  if (!name || !themeColor || !size) {
+    return res.status(400).json({ message: 'Room name, theme color, and size are required' });
   }
 
   try {
@@ -16,16 +17,20 @@ const createRoom = async (req, res) => {
     const newRoom = await Room.create({
       name,
       roomCode,
+      description: description || '',
+      themeColor,
+      size,
       admin: userId,
       members: [userId],
     });
 
     res.status(201).json({ room: newRoom });
   } catch (error) {
-    console.error(error);
+    console.error('Create Room Error:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
 
 
 const joinRoom = async (req, res) => {

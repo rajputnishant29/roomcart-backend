@@ -10,6 +10,21 @@ const roomSchema = new mongoose.Schema({
     unique: true,
     required: true,
   },
+  description: {
+    type: String,
+    default: '',
+  },
+  themeColor: {
+    type: String,
+    required: true,
+    default: '#4a90e2', // default color if none selected
+  },
+  size: {
+    type: String,
+    enum: ['Mini', 'Mid', 'Giant'],
+    required: true,
+    default: 'Mid',
+  },
   admin: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
