@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { createRoom,joinRoom} = require('../controllers/roomController');
-const protect = require('../middlewares/auth'); // JWT auth
+const protect = require('../middlewares/auth'); 
 const auth = require('../middlewares/auth')
 const Room = require('../models/Room')
 

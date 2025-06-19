@@ -1,5 +1,6 @@
 const SettlementRequest = require('../models/SettlementRequest');
 const mongoose = require('mongoose');
+const Notification = require('../models/Notification');
 
 // Create settlement request
 exports.markAsPaidRequest = async (req, res) => {
@@ -27,6 +28,15 @@ exports.markAsPaidRequest = async (req, res) => {
     });
 
     await request.save();
+
+    await Notification.create({
+      sender: from,
+      receivers: [to],
+      roomId: roomId,
+      type: 'settlement-request',
+      message: `You have a new settlement request of ₹${amount}.`,
+    });
+
     res.status(201).json({ message: 'Marked as paid. Awaiting confirmation.' });
   } catch (error) {
     console.error('Settlement creation error:', error.message);
@@ -38,7 +48,7 @@ exports.markAsPaidRequest = async (req, res) => {
 // Approve settlement
 exports.approveSettlement = async (req, res) => {
   const { requestId } = req.params;
-  const userId = req.user.id; // ✅ FIXED: use 'id' instead of '_id'
+  const userId = req.user.id;
 
   try {
     const request = await SettlementRequest.findById(requestId);
@@ -51,12 +61,21 @@ exports.approveSettlement = async (req, res) => {
     request.status = 'approved';
     await request.save();
 
+    await Notification.create({
+      sender: userId,
+      receivers: [request.from],
+      roomId: request.room,
+      type: 'settlement-approved',
+      message: `Your settlement request of ₹${request.amount} has been approved.`,
+    });
+
     res.status(200).json({ message: 'Settlement approved' });
   } catch (error) {
     console.error('Error approving settlement:', error.message);
     res.status(500).json({ message: 'Something went wrong' });
   }
 };
+
 
 exports.getMySettlementRequests = async (req, res) => {
   const userId = req.user._id || req.user.id;
