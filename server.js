@@ -17,6 +17,7 @@ app.use('/api/rooms', require('./routes/roomRoutes'));
 app.use('/api/expenses', require('./routes/expenseRoutes'));
 app.use('/api/settlements', require('./routes/settlementRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
+app.use('/api/chat', require('./routes/chatRoutes'));
 
 // Create server and socket instance
 const server = http.createServer(app);
@@ -32,6 +33,11 @@ global.io = io;
 // Handle socket connection
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
+
+  socket.on('registerUser', (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their personal notification room`);
+  });
 
   socket.on('joinRoom', (roomId) => {
     console.log(`User joined room: ${roomId}`);
