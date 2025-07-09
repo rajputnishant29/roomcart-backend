@@ -14,7 +14,7 @@ router.get('/:roomId', async (req, res) => {
   }
 });
 
-// ✅ POST a new chat message
+// ✅ POST a new chat message & emit via socket
 router.post('/', async (req, res) => {
   const { roomId, senderId, senderName, text } = req.body;
 
@@ -23,8 +23,20 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    const newMessage = new ChatMessage({ roomId, senderId, senderName, text });
+    const newMessage = new ChatMessage({
+      roomId,
+      senderId,
+      senderName,
+      text,
+      timestamp: new Date(),
+    });
+
     await newMessage.save();
+
+    // ✅ Emit to all sockets in the room
+    const io = req.app.get('io');
+    io.to(roomId).emit('receiveMessage', newMessage);
+
     res.status(201).json(newMessage);
   } catch (error) {
     console.error('Error creating message:', error);

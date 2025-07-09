@@ -4,12 +4,12 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 
 const createRoom = async (req, res) => {
-  const { name, description, themeColor, size } = req.body;
+  const { name, description, themeColor, size, avatar } = req.body; // ✅ Add avatar here
   const userId = req.user.id;
 
-  // Basic validation
-  if (!name || !themeColor || !size) {
-    return res.status(400).json({ message: 'Room name, theme color, and size are required' });
+  // ✅ Updated validation to include avatar
+  if (!name || !themeColor || !size || !avatar) {
+    return res.status(400).json({ message: 'Room name, theme color, size, and avatar are required' });
   }
 
   try {
@@ -22,6 +22,7 @@ const createRoom = async (req, res) => {
       description: description || '',
       themeColor,
       size,
+      avatar,
       admin: userId,
       members: [userId],
     });
@@ -32,6 +33,9 @@ const createRoom = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+module.exports = { createRoom };
+
 
 
 

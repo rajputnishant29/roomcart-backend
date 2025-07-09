@@ -57,5 +57,24 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// PUT /api/auth/update-avatar
+router.put('/update-avatar', auth, async (req, res) => {
+  const { avatar } = req.body;
+  if (!avatar) return res.status(400).json({ message: 'Avatar is required' });
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatar },
+      { new: true }
+    ).select('-password');
+    res.json({ message: 'Avatar updated', avatar: user.avatar });
+  } catch (err) {
+    console.error('Update Avatar Error:', err);
+    res.status(500).json({ message: 'Failed to update avatar' });
+  }
+});
+
+
 
 module.exports = router;

@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  avatar: {
+    type: String,
+    default: 'http://192.168.31.11:5000/avatar_01.jpg',
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

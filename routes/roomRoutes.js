@@ -17,8 +17,8 @@ router.get('/my-rooms', auth, async (req, res) => {
         { members: userId }
       ]
     })
-      .populate('admin', '_id name')
-      .populate('members', '_id name');
+      .populate('admin', '_id name avatar')
+      .populate('members', '_id name avatar');
     res.status(200).json(rooms);
   } catch (error) {
     console.error('Error fetching user rooms:', error);

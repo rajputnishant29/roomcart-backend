@@ -17,7 +17,7 @@ const roomSchema = new mongoose.Schema({
   themeColor: {
     type: String,
     required: true,
-    default: '#4a90e2', // default color if none selected
+    default: '#4a90e2',
   },
   size: {
     type: String,
@@ -34,6 +34,11 @@ const roomSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
+  avatar: {
+    type: String, 
+    // required: true,
+    default: 'http://192.168.31.11:5000/avatar_01.jpg'
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Room', roomSchema);
