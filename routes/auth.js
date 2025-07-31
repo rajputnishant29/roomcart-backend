@@ -24,10 +24,18 @@ router.post('/register', async (req, res) => {
       to: email,
       subject: '🎉 Welcome to OweZone!',
       html: `
-        <h2>Hello ${name},</h2>
-        <p>Welcome to <strong>OweZone</strong>! 🎉</p>
-        <p>Your journey to smarter group expense tracking starts now.</p>
-        <p>– Team OweZone</p>
+        <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+      <h2 style="color: #2b2b2b;">Hi ${name},</h2>
+      <p>Thanks for being part of <strong>OweZone</strong> – we’re thrilled to have you onboard! 🎉</p>
+      <p>We hope you’re enjoying a smarter way to track group expenses. This is just the beginning, and we’re working hard to bring you even more features and improvements.</p>
+      <p>✨ <strong>Stay tuned for app updates, tips, and new features</strong> coming your way soon.</p>
+      <p>💬 We’d love to hear from you – your feedback helps shape the future of OweZone.</p>
+      <p>
+        <a href="https://owezone-web.netlify.app/" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px;">Visit OweZone</a>
+      </p>
+      <p>Thank you for being with us.</p>
+      <p>– The OweZone Team</p>
+    </div>
       `,
     });
 
