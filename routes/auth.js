@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middlewares/auth');
+const sendMail = require('../utils/sendMail');
 
 const router = express.Router();
 
@@ -15,16 +16,27 @@ router.post('/register', async (req, res) => {
     if (user) return res.status(400).json({ message: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     user = new User({ name, email, password: hashedPassword });
     await user.save();
 
-    res.status(201).json({ message: 'User registered successfully' });
+    // ✅ Send Welcome Email
+    await sendMail({
+      to: email,
+      subject: '🎉 Welcome to OweZone!',
+      html: `
+        <h2>Hello ${name},</h2>
+        <p>Welcome to <strong>OweZone</strong>! 🎉</p>
+        <p>Your journey to smarter group expense tracking starts now.</p>
+        <p>– Team OweZone</p>
+      `,
+    });
+
+    res.status(201).json({ message: 'User registered and welcome email sent' });
   } catch (err) {
+    console.error('Register Error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
-
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;

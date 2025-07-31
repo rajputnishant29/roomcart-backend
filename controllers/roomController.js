@@ -4,10 +4,9 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 
 const createRoom = async (req, res) => {
-  const { name, description, themeColor, size, avatar } = req.body; // ✅ Add avatar here
+  const { name, description, themeColor, size, avatar } = req.body;
   const userId = req.user.id;
 
-  // ✅ Updated validation to include avatar
   if (!name || !themeColor || !size || !avatar) {
     return res.status(400).json({ message: 'Room name, theme color, size, and avatar are required' });
   }
