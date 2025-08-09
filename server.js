@@ -15,7 +15,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*', // or your frontend domain
+    origin: '*',
   },
 });
 
@@ -34,6 +34,7 @@ app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/chat', require('./routes/chatRoutes')); 
 app.use('/api/avatars', require('./routes/avatarRoutes'));
 app.use('/api/room-avatars', require('./routes/roomAvatarRoutes'));
+app.use('/api/forgot-password', require('./routes/forgot-password'));
 
 // ✅ Socket handling
 io.on('connection', (socket) => {

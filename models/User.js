@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const BASE_URL = process.env.BASE_URL;
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -16,8 +17,10 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: 'http://192.168.31.11:5000/avatar_01.jpg',
+    default: `${BASE_URL}/avatar_01.jpg`,
   },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

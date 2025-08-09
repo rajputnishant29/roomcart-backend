@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middlewares/auth');
+const sendMail = require('../utils/sendMail');
 
 const router = express.Router();
 
@@ -10,17 +11,45 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
+  console.log("📥 Incoming registration request:", { name, email, password });
+
+  if (!email || !name || !password) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
   try {
     let user = await User.findOne({ email });
     if (user) return res.status(400).json({ message: 'User already exists' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     user = new User({ name, email, password: hashedPassword });
     await user.save();
 
-    res.status(201).json({ message: 'User registered successfully' });
+    console.log("✅ User saved successfully");
+    console.log("📨 Attempting to send mail to:", email);
+
+    await sendMail({
+      to: email,
+      subject: '🎉 Welcome to OweZone!',
+      html: `
+       <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+      <h2 style="color: #2b2b2b;">Hi ${name},</h2>
+      <p>Thanks for being part of <strong>OweZone</strong> – we’re thrilled to have you onboard! 🎉</p>
+      <p>We hope you’re enjoying a smarter way to track group expenses. This is just the beginning, and we’re working hard to bring you even more features and improvements.</p>
+      <p>✨ <strong>Stay tuned for app updates, tips, and new features</strong> coming your way soon.</p>
+      <p>💬 We’d love to hear from you – your feedback helps shape the future of OweZone.</p>
+      <p>
+        <a href="https://owezone-web.netlify.app" style="display: inline-block; background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px;">Visit OweZone</a>
+      </p>
+      <p>Thank you for being with us.</p>
+      <p>– The OweZone Team</p>
+    </div>
+      `,
+    });
+
+    res.status(201).json({ message: 'User registered and welcome email sent' });
   } catch (err) {
+    console.error('Register Error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
