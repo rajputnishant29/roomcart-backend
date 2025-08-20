@@ -33,10 +33,7 @@ const createRoom = async (req, res) => {
   }
 };
 
-module.exports = { createRoom };
-
-
-
+// module.exports = { createRoom };
 
 const joinRoom = async (req, res) => {
   const { roomCode } = req.body;
@@ -72,6 +69,9 @@ const joinRoom = async (req, res) => {
       .map(member => member._id.toString())
       .filter(id => id !== userId);
 
+    // Access io from server.js
+    const io = req.app.get('io');
+
     // Only create and send notification if there are receivers
     if (receiverIds.length > 0) {
       const notification = await Notification.create({
@@ -85,7 +85,7 @@ const joinRoom = async (req, res) => {
       console.log('Join Room Notification Created:', notification);
 
       // Send real-time notification
-      global.io.to(room._id.toString()).emit('receiveNotification', {
+      io.to(room._id.toString()).emit('receiveNotification', {
         message,
         type: 'joined',
         senderName: user.name,
@@ -94,19 +94,22 @@ const joinRoom = async (req, res) => {
       });
     }
 
-    // Join socket room
-    global.io.sockets.sockets.forEach(socket => {
+    // Join socket room safely
+    for (const [id, socket] of io.sockets.sockets) {
       if (socket.userId === userId) {
         socket.join(room._id.toString());
       }
-    });
+    }
 
     res.status(200).json({ message: 'Joined room successfully', room });
-  } catch (err) {
-    console.error('Join Room Error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+  }catch (err) {
+  console.error('Join Room Error:', err);
+  return res.status(500).json({ message: 'Server error', error: err.message });
+}
+}
+
+
+
 
 
 
