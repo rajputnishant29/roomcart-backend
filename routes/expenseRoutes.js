@@ -44,16 +44,6 @@ router.post('/:roomId/add', auth, async (req, res) => {
       console.log('✅ Notification sent to:', receivers);
     }
 
-    const createdNotification = await Notification.create({
-  sender: req.user.id,
-  receivers,
-  roomId,
-  type: 'expense-added',
-  message: `New expense "${title}" of ₹${amount} was added.`,
-});
-
-console.log('🧾 Notification saved to DB:', createdNotification);
-
     res.status(201).json({ message: 'Expense added successfully', expense });
 
   } catch (err) {
