@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { createRoom,joinRoom} = require('../controllers/roomController');
+const { createRoom, joinRoom, getRoomActivities } = require('../controllers/roomController');
 const protect = require('../middlewares/auth'); 
-const auth = require('../middlewares/auth')
-const Room = require('../models/Room')
+const auth = require('../middlewares/auth');
+const Room = require('../models/Room');
 
 router.post('/create', protect, createRoom);
 router.post('/join', auth, joinRoom);
+router.get('/:roomId/activities', auth, getRoomActivities);
 
 router.get('/my-rooms', auth, async (req, res) => {
   try {

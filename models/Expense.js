@@ -26,4 +26,7 @@ const expenseSchema = new mongoose.Schema({
   },
 });
 
+expenseSchema.index({ room: 1 });
+expenseSchema.index({ addedBy: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Expense', expenseSchema);

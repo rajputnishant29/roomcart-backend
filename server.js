@@ -35,6 +35,7 @@ app.use('/api/chat', require('./routes/chatRoutes'));
 app.use('/api/avatars', require('./routes/avatarRoutes'));
 app.use('/api/room-avatars', require('./routes/roomAvatarRoutes'));
 app.use('/api/forgot-password', require('./routes/forgot-password'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
 // ✅ Socket handling
 io.on('connection', (socket) => {

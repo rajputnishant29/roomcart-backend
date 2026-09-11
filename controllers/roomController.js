@@ -113,7 +113,56 @@ const joinRoom = async (req, res) => {
 
 
 
+const getRoomActivities = async (req, res) => {
+  const { roomId } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const room = await Room.findById(roomId);
+
+    if (!room) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    // Check authorization: user must be admin or member of the room
+    const isMember =
+      room.admin.toString() === userId.toString() ||
+      room.members.some((memberId) => memberId.toString() === userId.toString());
+
+    if (!isMember) {
+      return res.status(403).json({ message: 'You are not authorized to view activities for this room' });
+    }
+
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
+
+    const notifications = await Notification.find({ roomId })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .populate('sender', '_id name avatar');
+
+    const activities = notifications.map((act) => ({
+      id: act._id,
+      type: act.type,
+      actor: {
+        id: act.sender?._id || null,
+        name: act.sender?.name || 'Unknown',
+        avatar: act.sender?.avatar || null,
+      },
+      roomId: act.roomId,
+      message: act.message || '',
+      createdAt: act.createdAt,
+    }));
+
+    res.status(200).json({ activities });
+  } catch (err) {
+    console.error('Get Room Activities Error:', err);
+    return res.status(500).json({ message: 'Server error', error: err.message });
+  }
+};
+
 module.exports = {
   createRoom,
-  joinRoom
+  joinRoom,
+  getRoomActivities,
 };
+

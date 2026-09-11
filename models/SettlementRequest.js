@@ -31,4 +31,6 @@ const settlementRequestSchema = new mongoose.Schema({
   },
 });
 
+settlementRequestSchema.index({ room: 1, status: 1 });
+
 module.exports = mongoose.model('SettlementRequest', settlementRequestSchema);
