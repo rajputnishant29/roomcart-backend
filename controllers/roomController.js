@@ -2,6 +2,7 @@ const { customAlphabet } = require('nanoid/non-secure');
 const Room = require('../models/Room');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const { sendPushToUsers } = require('../services/pushyService');
 
 const createRoom = async (req, res) => {
   const { name, description, themeColor, size, avatar } = req.body;
@@ -66,7 +67,7 @@ const joinRoom = async (req, res) => {
 
     // Get receivers (other members)
     const receiverIds = room.members
-      .map(member => member._id.toString())
+      .map(member => (member._id ? member._id.toString() : member.toString()))
       .filter(id => id !== userId);
 
     // Access io from server.js
@@ -91,6 +92,20 @@ const joinRoom = async (req, res) => {
         senderName: user.name,
         roomId: room._id,
         createdAt: notification.createdAt,
+      });
+
+      // Send push notification to receivers
+      sendPushToUsers({
+        userIds: receiverIds,
+        title: 'Room update',
+        message: notification.message,
+        data: {
+          type: 'joined',
+          notificationId: notification._id.toString(),
+          roomId: room._id.toString(),
+        },
+      }).catch((pushErr) => {
+        console.error('❌ Push delivery error on join-room:', pushErr.message);
       });
     }
 

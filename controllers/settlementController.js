@@ -1,6 +1,7 @@
 const SettlementRequest = require('../models/SettlementRequest');
 const mongoose = require('mongoose');
 const Notification = require('../models/Notification');
+const { sendPushToUsers } = require('../services/pushyService');
 
 // Create settlement request
 exports.markAsPaidRequest = async (req, res) => {
@@ -29,12 +30,27 @@ exports.markAsPaidRequest = async (req, res) => {
 
     await request.save();
 
-    await Notification.create({
+    const notification = await Notification.create({
       sender: from,
       receivers: [to],
       roomId: roomId,
       type: 'settlement-request',
       message: `You have a new settlement request of ₹${amount}.`,
+    });
+
+    // Send push notification to recipient
+    sendPushToUsers({
+      userIds: [to],
+      title: 'Settlement request',
+      message: notification.message,
+      data: {
+        type: 'settlement-request',
+        notificationId: notification._id.toString(),
+        roomId: roomId.toString(),
+        settlementId: request._id.toString(),
+      },
+    }).catch((pushErr) => {
+      console.error('❌ Push delivery error on settlement-request:', pushErr.message);
     });
 
     res.status(201).json({ message: 'Marked as paid. Awaiting confirmation.' });
@@ -61,12 +77,27 @@ exports.approveSettlement = async (req, res) => {
     request.status = 'approved';
     await request.save();
 
-    await Notification.create({
+    const notification = await Notification.create({
       sender: userId,
       receivers: [request.from],
       roomId: request.room,
       type: 'settlement-approved',
       message: `Your settlement request of ₹${request.amount} has been approved.`,
+    });
+
+    // Send push notification to requester
+    sendPushToUsers({
+      userIds: [request.from],
+      title: 'Settlement approved',
+      message: notification.message,
+      data: {
+        type: 'settlement-approved',
+        notificationId: notification._id.toString(),
+        roomId: request.room.toString(),
+        settlementId: request._id.toString(),
+      },
+    }).catch((pushErr) => {
+      console.error('❌ Push delivery error on settlement-approved:', pushErr.message);
     });
 
     res.status(200).json({ message: 'Settlement approved' });

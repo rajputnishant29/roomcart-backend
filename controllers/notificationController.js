@@ -1,4 +1,5 @@
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 
 const getUserNotification = async (req, res) => {
   const userId = req.user._id || req.user.id;
@@ -48,5 +49,83 @@ const getUserNotification = async (req, res) => {
   }
 };
 
-module.exports = { getUserNotification };
+const registerDevice = async (req, res) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    const { token, platform } = req.body;
+
+    if (!token || typeof token !== 'string' || !token.trim()) {
+      return res.status(400).json({ message: 'Device token is required' });
+    }
+
+    const trimmedToken = token.trim();
+    const normalizedPlatform = (typeof platform === 'string' && platform.trim())
+      ? platform.trim().toLowerCase()
+      : 'android';
+
+    const user = await User.findById(userId).select('+pushyDevices');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!Array.isArray(user.pushyDevices)) {
+      user.pushyDevices = [];
+    }
+
+    const existingIndex = user.pushyDevices.findIndex((d) => d.token === trimmedToken);
+    if (existingIndex !== -1) {
+      user.pushyDevices[existingIndex].updatedAt = new Date();
+      if (platform) {
+        user.pushyDevices[existingIndex].platform = normalizedPlatform;
+      }
+    } else {
+      user.pushyDevices.push({
+        token: trimmedToken,
+        platform: normalizedPlatform,
+        updatedAt: new Date(),
+      });
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      message: 'Push notification device registered successfully',
+    });
+  } catch (err) {
+    console.error('Register Device Error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const unregisterDevice = async (req, res) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    const { token } = req.body;
+
+    if (!token || typeof token !== 'string' || !token.trim()) {
+      return res.status(400).json({ message: 'Device token is required' });
+    }
+
+    const trimmedToken = token.trim();
+
+    await User.updateOne(
+      { _id: userId },
+      { $pull: { pushyDevices: { token: trimmedToken } } }
+    );
+
+    return res.status(200).json({
+      message: 'Device unregistered successfully',
+    });
+  } catch (err) {
+    console.error('Unregister Device Error:', err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = {
+  getUserNotification,
+  registerDevice,
+  unregisterDevice,
+};
+
 
