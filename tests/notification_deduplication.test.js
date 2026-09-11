@@ -92,6 +92,7 @@ describe('Notification Deduplication Tests', () => {
 
   it('GET /api/notifications/my returns a single notification per event', async () => {
     const origFind = Notification.find;
+    const origCount = Notification.countDocuments;
     const notificationDoc = {
       _id: new mongoose.Types.ObjectId(),
       sender: { name: 'User A' },
@@ -106,12 +107,18 @@ describe('Notification Deduplication Tests', () => {
         assert.equal(query.receivers, userBId);
         return {
           sort: () => ({
-            populate: () => ({
-              populate: () => Promise.resolve([notificationDoc]),
+            skip: () => ({
+              limit: () => ({
+                populate: () => ({
+                  populate: () => Promise.resolve([notificationDoc]),
+                }),
+              }),
             }),
           }),
         };
       };
+
+      Notification.countDocuments = () => Promise.resolve(1);
 
       const { req, res } = mockReqRes({ user: { id: userBId } });
       await getUserNotification(req, res);
@@ -121,6 +128,7 @@ describe('Notification Deduplication Tests', () => {
       assert.equal(res.data.notifications[0].message, 'New expense "Dinner" of ₹500 was added.');
     } finally {
       Notification.find = origFind;
+      Notification.countDocuments = origCount;
     }
   });
 });
