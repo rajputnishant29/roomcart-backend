@@ -22,6 +22,28 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
+  pushyDevices: {
+    type: [
+      {
+        token: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        platform: {
+          type: String,
+          default: 'android',
+          trim: true,
+        },
+        updatedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    default: [],
+    select: false,
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

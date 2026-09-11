@@ -5,6 +5,7 @@ const Room = require('../models/Room');
 const auth = require('../middlewares/auth');
 const { calculateSettlement } = require('../controllers/expenseController');
 const Notification = require('../models/Notification');
+const { sendPushToUsers } = require('../services/pushyService');
 
 //Add expense
 
@@ -34,7 +35,7 @@ router.post('/:roomId/add', auth, async (req, res) => {
       .map((member) => member._id);
 
     if (receivers.length > 0) {
-      await Notification.create({
+      const notification = await Notification.create({
         sender: req.user.id,
         receivers,
         roomId,
@@ -42,6 +43,21 @@ router.post('/:roomId/add', auth, async (req, res) => {
         message: `New expense "${title}" of ₹${amount} was added.`,
       });
       console.log('✅ Notification sent to:', receivers);
+
+      // Trigger push notification delivery (non-blocking for response)
+      sendPushToUsers({
+        userIds: receivers,
+        title: 'New expense',
+        message: notification.message,
+        data: {
+          type: 'expense-added',
+          notificationId: notification._id.toString(),
+          roomId: roomId.toString(),
+          expenseId: expense._id.toString(),
+        },
+      }).catch((pushErr) => {
+        console.error('❌ Push delivery error on add-expense:', pushErr.message);
+      });
     }
 
     res.status(201).json({ message: 'Expense added successfully', expense });
