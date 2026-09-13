@@ -11,6 +11,7 @@ const AVATAR_LIST = [
   `${BASE_URL}/avatar_04.png`,
   `${BASE_URL}/avatar_05.png`,
   `${BASE_URL}/avatar_06.png`,
+  `${BASE_URL}/avatar_07.png`,
 ];
 
 router.get('/', (req, res) => {
