@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middlewares/auth');
 const sendMail = require('../utils/sendMail');
+const { deleteUserAccount } = require('../services/accountDeletionService');
 
 const router = express.Router();
 
@@ -304,6 +305,21 @@ router.put('/update-avatar', auth, async (req, res) => {
   }
 });
 
-
+// DELETE /api/auth/me
+router.delete('/me', auth, async (req, res) => {
+  try {
+    const result = await deleteUserAccount(req.user.id);
+    if (result.notFound) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    return res.status(200).json({
+      success: true,
+      message: 'Account deleted successfully.',
+    });
+  } catch (err) {
+    console.error('Delete Account Error:', err.message);
+    return res.status(500).json({ message: 'Failed to delete account' });
+  }
+});
 
 module.exports = router;
